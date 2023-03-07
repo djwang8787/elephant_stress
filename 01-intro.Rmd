@@ -1,0 +1,221 @@
+---
+output:
+  pdf_document: default
+  html_document: default
+editor_options: 
+  chunk_output_type: console
+---
+# (Draft) Elephants pre- and post-hybrid contact management
+
+## Introduction
+
+## Methods
+As an overview of the elephants' activity patterns, coarse-scale activity budgets (with information provided by the keepers) were constructed to visualise differences that occurred between individuals. To better examine the change in behaviours through the constructed activity budgets, the difference in each examined behaviour between hybrid contact (HC) and protected contact (PC) was calculated. In doing so, a value below 0 represents a decrease in the proportion of the studied behaviour; vice versa, a value above 0 represents an increase in the proportion of said behaviour. This difference in the occurrence of behaviour between HC and PC was calculated for all five elephants.
+
+In addition, the Shannon's Index of Diversity [i.e., H-index\; see @roseConductingBehaviouralResearch2021] was also calculated to characterise the behavioural diversity of the five female elephants cared under HC and PC management. For this, the overall H-index of elephants under HC and PC were calculated and presented with standard errors.
+
+
+As suggested by @roseConductingBehaviouralResearch2021, the formula for computing the H-index in this study is simply:
+
+$$
+    SI = -\sum_{i = 1}^{B}p_i\times ln \times p_i
+$$
+
+### Statistical analysis
+
+Step 1: A two-way anova was performed to explain the difference in H-index values in elephants cared under HC and PC management. Here, weekly H-index values were used as a response while predictors were simply the period pertaining to the corresponding contact type (i.e., HC or PC) and the ID of the studied elephant. An interaction term between contact type and elephant ID was also included. 
+
+Alternative to Step 1: Model selection analysis was also conducted through linear mixed-model regression models to examine the influence of contact type on the weekly behavioural diversity (i.e., H-index) in the studied elephants. Elephant ID was included as the random effect (or term) and only one constructed model (Contact) was examined against the null model.
+
+For the analyses of cortisol levels, only three female elephants were examined (i.e., Gambir, Jati and Intan). Likewise, model selection analysis was conducted where two models were compared against the null. Weekly mean cortisol levels were used as a response and two separate models were fitted against contact type (i.e., HC versus PC) and year (of collection; examines year to year variation). Best fitted models are identified when $\Delta$AIC~c~ is $\le$ 2.
+
+## Results
+
+### Behaviour diversity
+In general, minimal differences can be observed in the activity budget of the five female elephants cared between HC and PC management (Figures \@ref(fig:actbud-f1) and \@ref(fig:actbud-f2)). For the most part, the proportion of exhibited behaviours decreased between 1%--8% while observations pertaining to poor visibility (i.e, "Not Visible") increased notably for all individuals (Figure \@ref(fig:actbud-f2).
+
+\blandscape
+
+```{r actbud-f1, fig.cap= "The difference in the proportion of exhibited behaviours in five female elephants when the type of contact between elephant and keepers transitioned from hybrid to fully-protected."}
+ggplot(data = actbud) +
+  geom_point(aes(x = variable, y = value, color = contact), size = 4.0, position = position_dodge(width = 0.90)) +
+  geom_hline(yintercept=0, linetype="dashed", color = "red") +
+  facet_wrap(.~Elephant, ncol = 1) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1)) +
+  xlab("Behaviours") +
+  ylab("Difference (%)")
+```
+
+```{r actbud-f2, fig.cap= "The difference in the proportion of exhibited behaviours in five female elephants when elephant care and management transitioned from hybrid to fully-protected contact."}
+ggplot(data = data.contact.diff) +
+  geom_point(aes(x = variable, y = value, color = Elephant, shape = Elephant), size = 4.0, position = position_dodge(width = 0.90)) +
+  geom_hline(yintercept=0, linetype="dashed", color = "red") +
+  facet_wrap(.~Elephant, ncol = 1) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1)) +
+  xlab("Behaviours") +
+  ylab("Difference (%)")
+```
+
+\elandscape
+
+Using weekly H-indices as a response, outputs from ANOVA (*p* < 0.001; Table \@ref(tab:anova-t)) and model selection analysis ($\Delta$AIC_c_ $\le$ 2; Table \@ref(tab:lmer-t)) suggests a significant departure in H-index values when the management of Elephants moved from hybrid to full-protected contact. Seemingly, H-index values decreased (i.e., reduced diversity in behaviours; Figure \@ref(fig:sdi-f)) during the aforementioned transition. However, this observed decline in H-index is not observed in the pair-wise comparisons within the two-way ANOVA (TukeyHSD; *p* value > 0.05, all pair-wise comparisons). **I would prefer to stick with just one approach to finding significance; I am not entirely familiar with anova.**
+
+```{r anova-t}
+#print(summary(a0))
+anova.t = data.frame(
+  "Model" = c("Contact", "Elephant", "Contact:Elephant", "Residuals"),
+  Df = c("1","4","4", "250"),
+  "Sum Sq" = c(0.397, 0.067, 0.094, 4.059),
+  "Mean Sq" = c(0.3967, 0.0167, 0.0236, 0.0162),
+  "F value" = c(24.437, 1.028, 1.454, " "),
+  "Pr($>$F)" = c("$<$0.001", 0.393, 0.217, " "),
+  check.names = FALSE
+)
+knitr::kable(anova.t,
+    booktabs = T, 
+    align = "c", 
+    linesep = '',
+    escape = F,
+    caption = "Summary results of ANOVA; contact refers to contact type (i.e., HC versus PC); contact:elephant examines interaction terms.") %>%
+  row_spec(0, bold = T)
+```
+
+```{r lmer-t}
+# model.0 = lmer(H~1 + (1|Elephant), data = SDI.weekly)
+# model.1 = lmer(H~contact + (1|Elephant), data = SDI.weekly)
+# model.sel(model.0, model.1)
+modelsel1 = data.frame(
+  "Model" = c("Contact", "Null"),
+  "k" = c(4,3),
+  "LL" = c(159.6, 151.2),
+  "AIC$_c$" = c(-311.1, -296.4),
+  "$\\Delta$AIC$_c$" = c(0, 14.76),
+  "wt" = c(0.999, 0.001),
+  check.names = FALSE
+)
+knitr::kable(modelsel1,
+    booktabs = T, 
+    align = "c", 
+    linesep = '',
+    escape = F,
+    caption = "Summary results of the model selection analysis examining influence of contact type on behaviour diversity in five female elephants. The number of parameters ($k$), log-likelihood ($LL$), second-order Akaike Information Criterion (AIC$_c$), $\\Delta$AIC$_c$ and Akaike's weights ($wt$) are presented.") %>%
+  row_spec(0, bold = T)
+```
+
+
+```{r sdi-f, fig.cap= "The Shannon's Index of Diversity (H-index) adapted to examine the behavioural diversity in 0.5 Asian elephants during hybrid and protected contact. Greater H-index values describe a greater diversity in exhibited behaviour and is suggestive of better animal welfare."}
+ggplot(data = SDI.overall, aes(x = contact, y = mean, color = contact)) + 
+  geom_point(size = 4.0, position = position_dodge(width = 0.90)) +
+  geom_errorbar(aes(ymin = mean-se, ymax = mean+se), position = "dodge", size = 0.2, linetype = 1) +
+  facet_wrap(.~Elephant) +
+  theme_minimal() +
+  xlab("Months") +
+  ylab("H-index") +
+  theme(legend.position = "None") +
+  scale_colour_manual(values = c("red", "blue"))
+```
+
+
+### Cortisol levels (Gambir, Jati and Komali only)
+
+Cortisol levels are a poor and unreliable indicator of H-index values (and *vice versa*) as correlations are difficult to pinpoint and likely spurious. Cortisol levels in Gambir and Komali were negatively correlated to H-index values (-0.51 and -0.65, respectively) while cortisol values from Jati were positively correlated to H-index values (i.e., 0.312). **Correlation not presented because of its weak arguments.**
+
+Outcomes of the model selection analysis also showed that the change in cortisol levels was not random and the model that examines contact type (i.e., LM1) was most parsimonious (Table \@ref(tab:lmer-t2)). Year to year influence (i.e., LM2) on cortisol levels are present (i.e., transitory free to hybrid contact period; Figure \@ref(fig:fecal-yearly-f)) but its influence is not as definitive as contact type. **Elephant ID was included as random term to account for individual variability.**
+
+```{r lmer-t2}
+# lm0 = lmer(mean~0 + (1|ID),
+#            data = fecal.monthly.df)
+# lm1 = lmer(mean~contact + (1|ID),
+#            data = fecal.monthly.df)
+# lm2 = lmer(mean~year + (1|ID),
+#            data = fecal.monthly.df)
+# model.sel(lm0, lm1, lm2)
+modelsel2 = data.frame(
+  "Model" = c("LM1", "LM2", "Null"),
+  "k" = c(4,4,2),
+  "LL" = c(-630.790,-634.636,-653.922),
+  "AIC$_c$" = c(1269.8,1277.5,1311.9),
+  "$\\Delta$AIC$_c$" = c(0, 7.69, 42.07),
+  "wt" = c(0.979, 0.021, 0.00),
+  check.names = FALSE
+)
+knitr::kable(modelsel2,
+    booktabs = T, 
+    align = "c", 
+    linesep = '',
+    escape = F,
+    caption = "Summary results of the model selection analysis examining influence of contact type on behaviour diversity in five female elephants. The number of parameters ($k$), log-likelihood ($LL$), second-order Akaike Information Criterion (AIC$_c$), $\\Delta$AIC$_c$ and Akaike's weights ($wt$) are presented.") %>%
+  row_spec(0, bold = T)
+```
+
+Visually, cortisol levels decreases as elephant management shifts from hybrid to protected contact. This interpretation contradicts the findings from the behavioural assessment of the animal's welfare (Figure \@ref(fig:sdi-f)); cortisol levels decreases in tandem with behavioural diversity. **Perhaps its more constructive if we remove Aprila and Jati in this examination and just focus on the remaining three.**
+
+\blandscape
+
+```{r fecal-yearly-f, fig.cap= "The yearly cortisol levels (2018--2021) of Gambir, Jati and Komali. Red and blue coloured points represents hybrid-contact and protected-contact management, respectively."}
+fecal.yearly.df %>%
+  filter(!year == 2017) %>%
+ggplot(data =., aes(x = year, y = mean, shape = contact,
+                               color = contact,
+                          ymin = mean-CI, ymax = mean+CI)) + 
+  geom_point(size = 4.0, position = position_dodge(width = 0.90)) +
+  geom_errorbar(width = 0.2, position = position_dodge(width = 0.90)) +
+  facet_wrap(.~ID, ncol = 1) +
+  theme_minimal() +
+  xlab("Years") +
+  ylab("Cortisol levels") +
+  theme(legend.position = "None") +
+  scale_colour_manual(values = c("red", "blue"))
+```
+
+```{r fecal-monthly-f, fig.cap= "The monthly cortisol levels (2018--2021) of Gambir, Jati and Komali. Red and blue points represents hybrid-contact and protected-contact management.", eval = F}
+fecal.monthly.df %>%
+  group_by(ID) %>%
+  dplyr::mutate(new.month = row_number()) %>% 
+  ggplot(data =., aes(x = new.month, y = mean, color = contact,
+                          ymin = mean-CI, ymax = mean+CI)) + 
+  geom_point(size = 4.0, position = position_dodge(width = 0.90)) +
+  geom_errorbar(width = 0.2, position = position_dodge(width = 0.90)) +
+  facet_wrap(ID~., ncol = 1) +
+  theme_minimal() +
+  xlab("Months") +
+  ylab("Cortisol levels") +
+  theme(legend.position = "None") +
+  scale_colour_manual(values = c("red", "blue"))
+```
+
+\elandscape
+
+The calculation of AUC overlaps in (rescaled) cortisol levels between months detailing PC and HC management suggests a relatively high degree of overlap (i.e., 76.19%; Figure \@ref(fig:fecaloverlap-f)). **Notes: this could be further expanded through multi-cosinor models.**
+
+\blandscape
+
+```{r fecaloverlap-f, fig.cap= "The overlap in (rescaled) cortisol levels between periods of HC and PC."}
+ggarrange(
+ggplot(x, aes(x = month)) +
+  geom_area(aes(y = overlap), fill = "black", alpha = 0.1)  +
+  ylab("Overlap") +
+  xlab("Months") +
+  theme_minimal()
+,
+ggplot(x, aes(x = month)) +
+  geom_area(aes(y = hybrid.auc.rescale), fill = "blue", alpha = 0.4) +
+  ylab("Hybrid") +
+  xlab("Months") +
+  theme_minimal()
+,
+ggplot(x, aes(x = month)) +
+  geom_area(aes(y = protect.auc.rescale), fill = "red", alpha = 0.4)+ 
+  ylab("Protected") +
+  xlab("Months") +
+  theme_minimal()
+, ncol = 1)
+```
+
+\elandscape
+
+## Discussion
+
+## Future directions
